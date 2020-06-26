@@ -61,7 +61,6 @@ namespace MinecraftCleanupUtility
 				}
 				foreach ( string modpack in modpacks )
 				{
-					Console.WriteLine( modpack );
 					string modpacklogpath = modpack + @"\logs";
 					string[] logs = Directory.GetFiles( modpacklogpath );
 					if ( !Directory.Exists( modpacklogpath ) )
