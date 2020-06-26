@@ -104,7 +104,7 @@ namespace MinecraftCleanupUtility
 		static void Main( string[] args )
 		{
 			bool checkoverride = args.Contains( "-checkall" );
-			Console.WriteLine( "\nMinecraftCleanupUtility - \u00a9 2020 LambdaGaming\n\nInitializing..." );
+			Console.WriteLine( "\nMinecraft Cleanup Utility - \u00a9 2020 LambdaGaming\n\nInitializing..." );
 			ParseJSON();
 			Console.WriteLine( "\nCheck for Minecraft log files?" );
 			if ( checkoverride || Console.ReadKey().Key == ConsoleKey.Y )
