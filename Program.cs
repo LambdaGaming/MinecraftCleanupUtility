@@ -1,122 +1,121 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace FolderCleanup
+namespace MinecraftCleanupUtility
 {
 	class Program
 	{
-		static string appdata = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData );
+		static string AppData = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData );
+		static string MinecraftPath = AppData + @"\.minecraft";
+		static string TechnicPath = AppData + @"\.technic";
+		static string MostRecentVersion = "1.16.1";
+		static string MostRecentSnapshot = "1.16.1";
+		static dynamic ProfileTable;
 
-		static void DeleteMinecraftLogs()
+		static void ParseJSON()
 		{
-			Console.WriteLine( "Checking for Minecraft log files..." );
-			string logpath = appdata + @"\.minecraft\logs";
+			string path = MinecraftPath + @"\launcher_profiles.json";
+			string data = File.ReadAllText( path );
+			dynamic newjson = JObject.Parse( data );
+			dynamic profiles = newjson.profiles;
+			ProfileTable = profiles;
+		}
+
+		static void DeleteMinecraftLogs( bool technic )
+		{
+			string logpath;
+			string name;
+			logpath = technic ? TechnicPath + @"\logs" : MinecraftPath + @"\logs";
+			name = technic ? "Technic" : "Minecraft";
+			Console.WriteLine( "\nChecking for " + name + " log files..." );
 			string[] getfiles = Directory.GetFiles( logpath );
 			if ( !Directory.Exists( logpath ) )
 			{
-				Console.WriteLine( "No Minecraft log files found. Skipping..." );
+				Console.WriteLine( "\nNo " + name + " log files found. Skipping..." );
 				return;
 			}
+
 			if ( getfiles.Length > 0 )
 			{
 				foreach ( string file in getfiles )
 				{
-					Console.WriteLine( "Deleting Minecraft log file: " + file );
+					Console.WriteLine( "Deleting " + name + " log file: " + file );
 					File.Delete( file );
 				}
-				return;
 			}
-			Console.WriteLine( "No Minecraft log files found. Skipping..." );
+			else
+				Console.WriteLine( "\nNo " + name + " log files found. Skipping..." );
+
+			if ( technic )
+			{
+				string modpackpath = TechnicPath + @"\modpacks";
+				string[] modpacks = Directory.GetDirectories( modpackpath );
+				Console.WriteLine( "\nChecking for Technic modpack log files..." );
+				if ( !Directory.Exists( modpackpath ) )
+				{
+					Console.WriteLine( "\nNo Technic modpacks found. Skipping..." );
+					return;
+				}
+				foreach ( string modpack in modpacks )
+				{
+					Console.WriteLine( modpack );
+					string modpacklogpath = modpack + @"\logs";
+					string[] logs = Directory.GetFiles( modpacklogpath );
+					if ( !Directory.Exists( modpacklogpath ) )
+					{
+						Console.WriteLine( "\nLog folder not found for " + modpack + ". Skipping..." );
+						return;
+					}
+					foreach( string log in logs )
+					{
+						Console.WriteLine( "Deleting " + name + " modpack log file: " + log );
+						File.Delete( log );
+					}
+				}
+			}
 		}
 
 		static void DeleteOldMinecraftVersions()
 		{
-			Console.WriteLine( "Checking for old minecraft versions..." );
-			string versionpath = appdata + @"\.minecraft\versions";
-			string[] getdirs = Directory.GetDirectories( versionpath );
+			Console.WriteLine( "\nChecking for old minecraft versions..." );
+			bool foundversions = false;
+			string versionpath = MinecraftPath + @"\versions";
+			string[] getversions = Directory.GetDirectories( versionpath );
 			Dictionary<int, string> delete = new Dictionary<int, string>();
-			if ( getdirs.Length > 0 )
-			{
-				string split;
-				int converted;
-				foreach ( string dir in getdirs )
-				{
-					if ( dir.Contains( "w" ) )
-						split = dir.Split( 'w' )[1].Trim( 'a' ); // Snapshot version format
-					else
-						split = dir.Split( '.' )[3]; // Regular version format
-
-					converted = int.Parse( split );
-					delete.Add( converted, dir );
-				}
-
-				var order = delete.OrderBy( k => k.Value ).First(); // Currently only checks for one version
-				Console.WriteLine( "Deleting old Minecraft version: " + order.Value );
-				Directory.Delete( order.Value );
-				return;
+			for ( int i = 1; i < ProfileTable.length; i++ )
+			{	
+				delete.Add( i, ProfileTable[i].lastVersionId );
 			}
-			Console.WriteLine( "No old Minecraft versions found. Skipping..." );
-		}
-
-		static void DeleteTempFolders()
-		{
-			string temppath = @"C:\temp";
-			string temppathwindows = @"C:\windows\temp";
-			if ( Directory.Exists( temppath ) )
+			foreach ( string version in getversions )
 			{
-				string[] getfiles = Directory.GetFiles( temppath );
-				foreach ( string file in getfiles )
-				{
-					try
-					{
-						if ( File.GetLastWriteTime( file ) != DateTime.Today ) // Make sure the temporary file wasn't written to today since it might be still in use
-						{
-							File.Delete( file );
-							Console.WriteLine( "Deleting temporary file: " + file );
-						}
-					}
-					catch ( IOException )
-					{
-						Console.WriteLine( "Found file: " + file + ", but file is still in use. Skipping..." );
-					}
-				}
+				string foldername = new DirectoryInfo( version ).Name;
+				if ( delete.ContainsValue( version ) || foldername == MostRecentVersion || foldername == MostRecentSnapshot ) continue;
+				Console.WriteLine( "Deleting old minecraft version: " + foldername );
+				Directory.Delete( version, true );
+				foundversions = true;
 			}
-			if ( Directory.Exists( temppathwindows ) )
-			{
-				string[] getfileswindows = Directory.GetFiles( temppathwindows );
-				foreach ( string file in getfileswindows )
-				{
-					try
-					{
-						if ( File.GetLastWriteTime( file ) != DateTime.Today )
-						{
-							File.Delete( file );
-							Console.WriteLine( "Deleting temporary file: " + file );
-						}
-					}
-					catch ( IOException )
-					{
-						Console.WriteLine( "Found file: " + file + ", but file is still in use. Skipping..." );
-					}
-				}
-			}
+			if ( !foundversions )
+				Console.WriteLine( "\nNo old Minecraft versions found. Skipping..." );
 		}
 
 		static void Main( string[] args )
 		{
-			Console.WriteLine( "FolderCleanup - \u00a9 2020 LambdaGaming\n\nInitializing..." );
-			Console.WriteLine( "Check for Minecraft log files?" );
-			if ( Console.ReadKey().Key == ConsoleKey.Y )
-				DeleteMinecraftLogs();
-			Console.WriteLine( "Check for old Minecraft versions?" );
-			if ( Console.ReadKey().Key == ConsoleKey.Y )
+			bool checkoverride = args.Contains( "-checkall" );
+			Console.WriteLine( "\nMinecraftCleanupUtility - \u00a9 2020 LambdaGaming\n\nInitializing..." );
+			ParseJSON();
+			Console.WriteLine( "\nCheck for Minecraft log files?" );
+			if ( checkoverride || Console.ReadKey().Key == ConsoleKey.Y )
+				DeleteMinecraftLogs( false );
+			Console.WriteLine( "\nCheck for Technic log files?" );
+			if ( checkoverride || Console.ReadKey().Key == ConsoleKey.Y )
+				DeleteMinecraftLogs( true );
+			Console.WriteLine( "\nCheck for old Minecraft versions?" );
+			if ( checkoverride || Console.ReadKey().Key == ConsoleKey.Y )
 				DeleteOldMinecraftVersions();
-			Console.WriteLine( "Check for temporary files?" );
-			if ( Console.ReadKey().Key == ConsoleKey.Y )
-				DeleteTempFolders();
-			Console.WriteLine( "Process complete. Press any key to continue..." );
+			Console.WriteLine( "\nProcess complete. Press any key to continue..." );
 			Console.ReadKey();
 		}
 	}
