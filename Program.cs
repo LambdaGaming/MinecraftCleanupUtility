@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 
 namespace MinecraftCleanupUtility
 {
@@ -11,9 +12,32 @@ namespace MinecraftCleanupUtility
 		static string AppData = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData );
 		static string MinecraftPath = AppData + @"\.minecraft";
 		static string TechnicPath = AppData + @"\.technic";
-		static string MostRecentVersion = "1.16.1";
-		static string MostRecentSnapshot = "1.16.1";
+		static string MostRecentVersion = GetLatestVersion( false );
+		static string MostRecentSnapshot = GetLatestVersion( true );
 		static dynamic ProfileTable;
+		static bool VersionCheckError = false;
+
+		static string GetLatestVersion( bool snapshot )
+		{
+			string url = snapshot ? "https://raw.githubusercontent.com/LambdaGaming/MinecraftCleanupUtility/master/latest_snapshot.txt" : "https://raw.githubusercontent.com/LambdaGaming/MinecraftCleanupUtility/master/latest_version.txt";
+			WebClient getversion = new WebClient();
+			try
+			{
+				string getdata = getversion.DownloadString( url );
+				return getdata;
+			}
+			catch
+			{
+				if ( !VersionCheckError )
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine( "\nAn error occurred while getting the latest Minecraft versions. Version cleanup may delete the wrong versions." );
+					Console.ResetColor();
+					VersionCheckError = true;
+				}
+			}
+			return "";
+		}
 
 		static void ParseJSON()
 		{
