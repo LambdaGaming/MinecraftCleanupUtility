@@ -55,13 +55,13 @@ namespace MinecraftCleanupUtility
 			logpath = technic ? TechnicPath + @"\logs" : MinecraftPath + @"\logs";
 			name = technic ? "Technic" : "Minecraft";
 			Console.WriteLine( "\nChecking for " + name + " log files..." );
-			string[] getfiles = Directory.GetFiles( logpath );
 			if ( !Directory.Exists( logpath ) )
 			{
 				Console.WriteLine( "\nNo " + name + " log files found. Skipping..." );
 				return;
 			}
 
+			string[] getfiles = Directory.GetFiles( logpath );
 			if ( getfiles.Length > 0 )
 			{
 				foreach ( string file in getfiles )
@@ -76,22 +76,24 @@ namespace MinecraftCleanupUtility
 			if ( technic )
 			{
 				string modpackpath = TechnicPath + @"\modpacks";
-				string[] modpacks = Directory.GetDirectories( modpackpath );
 				Console.WriteLine( "\nChecking for Technic modpack log files..." );
 				if ( !Directory.Exists( modpackpath ) )
 				{
 					Console.WriteLine( "\nNo Technic modpacks found. Skipping..." );
 					return;
 				}
+
+				string[] modpacks = Directory.GetDirectories( modpackpath );
 				foreach ( string modpack in modpacks )
 				{
 					string modpacklogpath = modpack + @"\logs";
-					string[] logs = Directory.GetFiles( modpacklogpath );
 					if ( !Directory.Exists( modpacklogpath ) )
 					{
 						Console.WriteLine( "\nLog folder not found for " + modpack + ". Skipping..." );
-						return;
+						continue;
 					}
+
+					string[] logs = Directory.GetFiles( modpacklogpath );
 					foreach( string log in logs )
 					{
 						Console.WriteLine( "Deleting " + name + " modpack log file: " + log );
