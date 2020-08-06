@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace MinecraftCleanupUtility
 {
@@ -23,7 +24,8 @@ namespace MinecraftCleanupUtility
 			WebClient getversion = new WebClient();
 			try
 			{
-				string getdata = getversion.DownloadString( url );
+				string download = getversion.DownloadString( url );
+				string getdata = Regex.Replace( download, @"\s+", string.Empty );
 				return getdata;
 			}
 			catch
@@ -35,8 +37,8 @@ namespace MinecraftCleanupUtility
 					Console.ResetColor();
 					VersionCheckError = true;
 				}
+				return "";
 			}
-			return "";
 		}
 
 		static void ParseJSON()
@@ -50,10 +52,8 @@ namespace MinecraftCleanupUtility
 
 		static void DeleteMinecraftLogs( bool technic )
 		{
-			string logpath;
-			string name;
-			logpath = technic ? TechnicPath + @"\logs" : MinecraftPath + @"\logs";
-			name = technic ? "Technic" : "Minecraft";
+			string logpath = technic ? TechnicPath + @"\logs" : MinecraftPath + @"\logs"; ;
+			string name = technic ? "Technic" : "Minecraft";
 			Console.WriteLine( "\nChecking for " + name + " log files..." );
 			if ( !Directory.Exists( logpath ) )
 			{
