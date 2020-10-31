@@ -15,7 +15,7 @@ namespace MinecraftCleanupUtility
 		static string TechnicPath = AppData + @"\.technic";
 		static string MostRecentVersion = GetLatestVersion( false );
 		static string MostRecentSnapshot = GetLatestVersion( true );
-		static dynamic ProfileTable;
+		static List<dynamic> ProfileTable = new List<dynamic>();
 		static bool VersionCheckError = false;
 
 		static string GetLatestVersion( bool snapshot )
@@ -47,7 +47,11 @@ namespace MinecraftCleanupUtility
 			string data = File.ReadAllText( path );
 			dynamic newjson = JObject.Parse( data );
 			dynamic profiles = newjson.profiles;
-			ProfileTable = profiles;
+			foreach ( dynamic profile in profiles )
+			{
+				foreach ( dynamic version in profile )
+					ProfileTable.Add( version.lastVersionId );
+			}
 		}
 
 		static void DeleteMinecraftLogs( bool technic )
@@ -109,15 +113,19 @@ namespace MinecraftCleanupUtility
 			bool foundversions = false;
 			string versionpath = MinecraftPath + @"\versions";
 			string[] getversions = Directory.GetDirectories( versionpath );
-			Dictionary<int, string> delete = new Dictionary<int, string>();
-			for ( int i = 1; i < ProfileTable.length; i++ )
-			{	
-				delete.Add( i, ProfileTable[i].lastVersionId );
-			}
 			foreach ( string version in getversions )
 			{
+				bool contains = false;
 				string foldername = new DirectoryInfo( version ).Name;
-				if ( delete.ContainsValue( version ) || foldername == MostRecentVersion || foldername == MostRecentSnapshot ) continue;
+				foreach ( dynamic tableversion in ProfileTable )
+				{
+					if ( tableversion == foldername )
+					{
+						contains = true;
+						break;
+					}
+				}
+				if ( contains || foldername == MostRecentVersion || foldername == MostRecentSnapshot ) continue;
 				Console.WriteLine( "Deleting old minecraft version: " + foldername );
 				Directory.Delete( version, true );
 				foundversions = true;
