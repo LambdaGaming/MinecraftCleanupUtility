@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace MinecraftCleanupUtility
 {
@@ -56,13 +57,25 @@ namespace MinecraftCleanupUtility
 
 		static void DeleteMinecraftLogs( bool technic )
 		{
-			string logpath = technic ? TechnicPath + @"\logs" : MinecraftPath + @"\logs"; ;
+			string logpath = technic ? TechnicPath + @"\logs" : MinecraftPath + @"\logs";
 			string name = technic ? "Technic" : "Minecraft";
+			bool foundlauncherlog = false;
 			Console.WriteLine( "\nChecking for " + name + " log files..." );
 			if ( !Directory.Exists( logpath ) )
 			{
 				Console.WriteLine( "\nNo " + name + " log files found. Skipping..." );
 				return;
+			}
+
+			if ( !technic )
+			{
+				string launcherlogpath = MinecraftPath + @"\launcher_log.txt";
+				if ( File.Exists( launcherlogpath ) )
+				{
+					Console.WriteLine( "Deleting launcher_log.txt" );
+					File.Delete( launcherlogpath );
+					foundlauncherlog = true;
+				}
 			}
 
 			string[] getfiles = Directory.GetFiles( logpath );
@@ -74,8 +87,10 @@ namespace MinecraftCleanupUtility
 					File.Delete( file );
 				}
 			}
-			else
+			else if ( !foundlauncherlog )
+			{
 				Console.WriteLine( "\nNo " + name + " log files found. Skipping..." );
+			}
 
 			if ( technic )
 			{
@@ -137,7 +152,7 @@ namespace MinecraftCleanupUtility
 		static void Main( string[] args )
 		{
 			bool checkoverride = args.Contains( "-checkall" );
-			string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+			string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 			Console.WriteLine( "\nMinecraft Cleanup Utility v" + version + " - \u00a9 2020 LambdaGaming\n\nInitializing..." );
 			ParseJSON();
 			Console.WriteLine( "\nCheck for Minecraft log files?" );
