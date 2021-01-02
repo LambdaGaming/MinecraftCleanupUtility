@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
 [assembly: AssemblyProduct( "MinecraftCleanupUtility" )]
-[assembly: AssemblyCopyright( "Copyright © LambdaGaming 2020" )]
+[assembly: AssemblyCopyright( "Copyright © LambdaGaming 2021" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 
