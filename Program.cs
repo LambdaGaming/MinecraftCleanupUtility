@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
 using System.Reflection;
 
 namespace MinecraftCleanupUtility
@@ -14,32 +12,26 @@ namespace MinecraftCleanupUtility
 		static string AppData = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData );
 		static string MinecraftPath = AppData + @"\.minecraft";
 		static string TechnicPath = AppData + @"\.technic";
-		static string MostRecentVersion = GetLatestVersion( false );
-		static string MostRecentSnapshot = GetLatestVersion( true );
+		static string MostRecentVersion;
+		static string MostRecentSnapshot;
 		static List<dynamic> ProfileTable = new List<dynamic>();
-		static bool VersionCheckError = false;
 
-		static string GetLatestVersion( bool snapshot )
+		static void GetLatestVersion()
 		{
-			string url = snapshot ? "https://raw.githubusercontent.com/LambdaGaming/MinecraftCleanupUtility/master/latest_snapshot.txt" : "https://raw.githubusercontent.com/LambdaGaming/MinecraftCleanupUtility/master/latest_version.txt";
-			WebClient getversion = new WebClient();
-			try
+			string path = MinecraftPath + @"\versions\version_manifest_v2.json";
+
+			if ( !File.Exists( path ) )
 			{
-				string download = getversion.DownloadString( url );
-				string getdata = Regex.Replace( download, @"\s+", string.Empty );
-				return getdata;
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine( "Failed to find the file 'version_manifest_v2.json'. Make sure you run the Minecraft launcher at least once before running the cleanup." );
+				Console.ResetColor();
+				return;
 			}
-			catch
-			{
-				if ( !VersionCheckError )
-				{
-					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine( "\nAn error occurred while getting the latest Minecraft versions. Version cleanup may delete the wrong versions." );
-					Console.ResetColor();
-					VersionCheckError = true;
-				}
-				return "";
-			}
+
+			string data = File.ReadAllText( path );
+			dynamic newjson = JObject.Parse( data );
+			MostRecentVersion = newjson.latest.release;
+			MostRecentSnapshot = newjson.latest.snapshot;
 		}
 
 		static void ParseJSON()
@@ -153,7 +145,8 @@ namespace MinecraftCleanupUtility
 		{
 			bool checkoverride = args.Contains( "-checkall" );
 			string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-			Console.WriteLine( "\nMinecraft Cleanup Utility v" + version + " - \u00a9 2020 LambdaGaming\n\nInitializing..." );
+			Console.WriteLine( "\nMinecraft Cleanup Utility v" + version + " - \u00a9 2021 LambdaGaming\n\nInitializing..." );
+			GetLatestVersion();
 			ParseJSON();
 			Console.WriteLine( "\nCheck for Minecraft log files?" );
 			if ( checkoverride || Console.ReadKey().Key == ConsoleKey.Y )
