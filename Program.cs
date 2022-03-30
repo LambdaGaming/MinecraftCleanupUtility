@@ -145,7 +145,7 @@ namespace MinecraftCleanupUtility
 		{
 			bool checkoverride = args.Contains( "-checkall" );
 			string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-			Console.WriteLine( "\nMinecraft Cleanup Utility v" + version + " - \u00a9 2021 LambdaGaming\n\nInitializing..." );
+			Console.WriteLine( "\nMinecraft Cleanup Utility v" + version + " - \u00a9 2020-2022 LambdaGaming\n\nInitializing..." );
 			GetLatestVersion();
 			ParseJSON();
 			Console.WriteLine( "\nCheck for Minecraft log files?" );
