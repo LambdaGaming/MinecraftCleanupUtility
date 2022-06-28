@@ -1,5 +1,5 @@
 # Minecraft Cleanup Utility
- Python script that helps cleanup log files and unused versions for Minecraft and Technic. Requires Python 3.6+ and Windows 7+.
+ Python script that helps cleanup log files and unused versions for Minecraft Java Edition and Technic. Requires Python 3.6+ and Windows Vista or later. Linux and Mac are currently not supported.
 
 # How to Use
  Download the minecraft_cleanup_utility.py file and run it with Python. The script will prompt you from there. You can also use the parameter -checkall if you want to automatically answer yes for each prompt.
