@@ -80,11 +80,11 @@ def DeleteOldMinecraftVersions():
 	versionpath = MinecraftPath + "\\versions"
 	getversions = os.listdir( versionpath )
 	for version in getversions:
-		versionpath += f"\\{version}"
-		if version in ProfileTable or version == MostRecentVersion or version == MostRecentSnapshot or not os.path.isdir( versionpath ):
+		finalpath = f"{versionpath}\\{version}"
+		if version in ProfileTable or version == MostRecentVersion or version == MostRecentSnapshot or not os.path.isdir( finalpath ):
 			continue
 		print( f"Deleting old Minecraft version: {version}" )
-		shutil.rmtree( versionpath )
+		shutil.rmtree( finalpath )
 		foundversions = True
 	if not foundversions:
 		print( "No old Minecraft versions found. Skipping..." )
