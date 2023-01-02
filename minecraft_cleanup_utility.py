@@ -49,6 +49,7 @@ def DeleteMinecraftLogs( technic ):
 	getfiles = os.listdir( logpath )
 	if len( getfiles ) > 0:
 		for file in getfiles:
+			if "telemetry" in file: continue
 			print( f"Deleting {name} log file: {file}" )
 			os.remove( os.path.join( logpath, file ) )
 	elif not foundlauncherlog:
