@@ -30,6 +30,16 @@ def ParseJSON():
 	for profile in profiles:
 		ProfileTable.append( newjson["profiles"][profile]["lastVersionId"] )
 
+def SafeRemoveFile( file ):
+	try:
+		os.remove( file )
+	except PermissionError:
+		print( f"Couldn't delete {file}: Permission denied. Path might be a folder or the file might be in use." )
+	except FileNotFoundError:
+		print( f"Couldn't delete {file}: File not found." )
+	except:
+		print( f"Something went wrong while deleting {file}. Skipping..." )
+
 def DeleteMinecraftLogs( technic ):
 	logpath = technic and TechnicPath + "\\logs" or MinecraftPath + "\\logs"
 	name = technic and "Technic" or "Minecraft"
@@ -43,7 +53,7 @@ def DeleteMinecraftLogs( technic ):
 		launcherlogpath = MinecraftPath + "\\launcher_log.txt"
 		if os.path.exists( launcherlogpath ):
 			print( "Deleting launcher_log.txt" )
-			os.remove( launcherlogpath )
+			SafeRemoveFile( launcherlogpath )
 			foundlauncherlog = True
 
 	getfiles = os.listdir( logpath )
@@ -51,7 +61,7 @@ def DeleteMinecraftLogs( technic ):
 		for file in getfiles:
 			if "telemetry" in file: continue
 			print( f"Deleting {name} log file: {file}" )
-			os.remove( os.path.join( logpath, file ) )
+			SafeRemoveFile( os.path.join( logpath, file ) )
 	elif not foundlauncherlog:
 		print( f"No {name} log files found. Skipping..." )
 
@@ -61,9 +71,9 @@ def DeleteMinecraftLogs( technic ):
 		if len( os.listdir( modpackpath ) ) == 0:
 			print( "No Technic modpacks found. Skipping..." )
 			return
-		modpacks = os.listdir( modpackpath )
-		for modpack in modpacks:
-			modpacklogpath = modpack + "\\logs"
+		for modpack in os.listdir( modpackpath ):
+			modpacklogpath = f"{modpackpath}\\{modpack}\\logs"
+			print(modpacklogpath)
 			if not os.path.exists( modpacklogpath ):
 				print( f"Log folder not found for {modpack}. Skipping..." )
 				continue
@@ -73,7 +83,7 @@ def DeleteMinecraftLogs( technic ):
 				continue
 			for log in logs:
 				print( f"Deleting {name} modpack log file: {log}" )
-				os.remove( log )
+				SafeRemoveFile( os.path.join( modpacklogpath, log ) )
 
 def DeleteOldMinecraftVersions():
 	print( "Checking for old Minecraft versions..." )
@@ -92,7 +102,7 @@ def DeleteOldMinecraftVersions():
 
 if __name__ == "__main__":
 	checkoverride = "-checkall" in sys.argv
-	print( "Minecraft Cleanup Utility | \u00a9 2020-2022 LambdaGaming" )
+	print( "Minecraft Cleanup Utility | \u00a9 2020-2023 LambdaGaming" )
 	GetLatestVersion()
 	ParseJSON()
 	check = input( "Check for Minecraft log files? (y/n)" )
