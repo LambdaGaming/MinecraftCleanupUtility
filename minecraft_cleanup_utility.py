@@ -59,7 +59,6 @@ def DeleteMinecraftLogs( technic ):
 	getfiles = os.listdir( logpath )
 	if len( getfiles ) > 0:
 		for file in getfiles:
-			if "telemetry" in file: continue
 			print( f"Deleting {name} log file: {file}" )
 			SafeRemoveFile( os.path.join( logpath, file ) )
 	elif not foundlauncherlog:
@@ -73,7 +72,6 @@ def DeleteMinecraftLogs( technic ):
 			return
 		for modpack in os.listdir( modpackpath ):
 			modpacklogpath = f"{modpackpath}\\{modpack}\\logs"
-			print(modpacklogpath)
 			if not os.path.exists( modpacklogpath ):
 				print( f"Log folder not found for {modpack}. Skipping..." )
 				continue
