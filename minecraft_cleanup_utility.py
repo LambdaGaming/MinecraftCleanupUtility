@@ -1,18 +1,20 @@
 import json
 import os
+import platform
 import shutil
 import sys
+from pathlib import Path
 
-AppData = os.getenv( "APPDATA" )
-MinecraftPath = AppData + "\\.minecraft"
-TechnicPath = AppData + "\\.technic"
+AppData = platform.system() == "Linux" and str( Path.home() ) or os.getenv( "APPDATA" )
+MinecraftPath = AppData + "/.minecraft"
+TechnicPath = AppData + "/.technic"
 MostRecentVersion = ""
 MostRecentSnapshot = ""
 ProfileTable = []
 
 def GetLatestVersion():
 	global MostRecentVersion, MostRecentSnapshot
-	path = MinecraftPath + "\\versions\\version_manifest_v2.json"
+	path = MinecraftPath + "/versions/version_manifest_v2.json"
 	if not os.path.exists( path ):
 		print( f"Failed to find {path}. Make sure you run the game at least once before running the cleanup." )
 		sys.exit()
@@ -23,7 +25,7 @@ def GetLatestVersion():
 	data.close()
 
 def ParseJSON():
-	path = MinecraftPath + "\\launcher_profiles.json"
+	path = MinecraftPath + "/launcher_profiles.json"
 	data = open( path )
 	newjson = json.loads( data.read() )
 	profiles = newjson["profiles"]
@@ -41,7 +43,7 @@ def SafeRemoveFile( file ):
 		print( f"Something went wrong while deleting {file}. Skipping..." )
 
 def DeleteMinecraftLogs( technic ):
-	logpath = technic and TechnicPath + "\\logs" or MinecraftPath + "\\logs"
+	logpath = technic and TechnicPath + "/logs" or MinecraftPath + "/logs"
 	name = technic and "Technic" or "Minecraft"
 	foundlauncherlog = False
 	print( f"Checking for {name} log files..." )
@@ -50,7 +52,7 @@ def DeleteMinecraftLogs( technic ):
 		return
 
 	if not technic:
-		launcherlogpath = MinecraftPath + "\\launcher_log.txt"
+		launcherlogpath = MinecraftPath + "/launcher_log.txt"
 		if os.path.exists( launcherlogpath ):
 			print( "Deleting launcher_log.txt" )
 			SafeRemoveFile( launcherlogpath )
@@ -65,13 +67,13 @@ def DeleteMinecraftLogs( technic ):
 		print( f"No {name} log files found. Skipping..." )
 
 	if technic:
-		modpackpath = TechnicPath + "\\modpacks"
+		modpackpath = TechnicPath + "/modpacks"
 		print( "Checking for Technic modpack log files..." )
 		if len( os.listdir( modpackpath ) ) == 0:
 			print( "No Technic modpacks found. Skipping..." )
 			return
 		for modpack in os.listdir( modpackpath ):
-			modpacklogpath = f"{modpackpath}\\{modpack}\\logs"
+			modpacklogpath = f"{modpackpath}/{modpack}/logs"
 			if not os.path.exists( modpacklogpath ):
 				print( f"Log folder not found for {modpack}. Skipping..." )
 				continue
@@ -86,10 +88,10 @@ def DeleteMinecraftLogs( technic ):
 def DeleteOldMinecraftVersions():
 	print( "Checking for old Minecraft versions..." )
 	foundversions = False
-	versionpath = MinecraftPath + "\\versions"
+	versionpath = MinecraftPath + "/versions"
 	getversions = os.listdir( versionpath )
 	for version in getversions:
-		finalpath = f"{versionpath}\\{version}"
+		finalpath = f"{versionpath}/{version}"
 		if version in ProfileTable or version == MostRecentVersion or version == MostRecentSnapshot or not os.path.isdir( finalpath ):
 			continue
 		print( f"Deleting old Minecraft version: {version}" )
@@ -100,7 +102,7 @@ def DeleteOldMinecraftVersions():
 
 if __name__ == "__main__":
 	checkoverride = "-checkall" in sys.argv
-	print( "Minecraft Cleanup Utility | \u00a9 2020-2023 LambdaGaming" )
+	print( "Minecraft Cleanup Utility | Copyright (c) 2020-2024 OPGman" )
 	GetLatestVersion()
 	ParseJSON()
 	check = input( "Check for Minecraft log files? (y/n)" )
